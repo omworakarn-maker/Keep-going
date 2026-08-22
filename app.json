@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Keep Going",
+    "slug": "keep-going",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-audio"
+    ],
+    "android": {
+      "package": "com.example.keepgoing"
+    },
+    "ios": {
+      "bundleIdentifier": "com.example.keepgoing"
+    }
+  }
+}
