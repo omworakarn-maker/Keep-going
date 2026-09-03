@@ -40,7 +40,7 @@ export function JournalScreen() {
   };
 
   return <>
-    <Screen resetScrollOnFocus>
+    <Screen resetScrollOnFocus animateOnFocus={false}>
       <Text style={styles.pageTitle}>เขียนบันทึก</Text><Text style={styles.pageSubtitle}>พื้นที่นี้เป็นของคุณทั้งหมด</Text>
       <View style={styles.segment}><Segment label="เช็กอิน" selected={mode === 'checkin'} onPress={() => setMode('checkin')} /><Segment label="ไดอารี" selected={mode === 'diary'} onPress={() => setMode('diary')} /></View>
       {mode === 'checkin' ? (todayEntry ? <Completed entry={todayEntry} /> : <View>
