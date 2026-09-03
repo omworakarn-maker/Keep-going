@@ -36,8 +36,7 @@ function MainTabs() {
       tabBarStyle: { height: 58 + bottomPadding, paddingTop: 7, paddingBottom: bottomPadding, borderTopColor: '#EEE3E5', backgroundColor: '#FFFFFF' },
       tabBarItemStyle: { borderRadius: 17, marginHorizontal: 4, overflow: 'hidden' },
       tabBarLabelStyle: { fontSize: 11, fontWeight: '800' },
-      animation: 'fade',
-      transitionSpec: { animation: 'timing', config: { duration: 180 } },
+      animation: 'none',
       tabBarIcon: ({ focused }) => <TabIcon icon={tabIcons[route.name]} focused={focused} />,
     })}>
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'วันนี้' }} />
@@ -76,14 +75,14 @@ const styles = StyleSheet.create({
 export function RootNavigator() {
   const { hasOnboarded } = useApp();
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right', gestureEnabled: true }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'none', gestureEnabled: true }}>
       {hasOnboarded ? (
         <>
-          <Stack.Screen name="Main" component={MainTabs} options={{ animation: 'fade' }} />
+          <Stack.Screen name="Main" component={MainTabs} options={{ animation: 'none' }} />
           <Stack.Screen name="UrgeSupport" component={UrgeSupportScreen} options={{ animation: 'slide_from_bottom', gestureEnabled: false }} />
         </>
       ) : (
-        <Stack.Group>
+        <Stack.Group screenOptions={{ animation: 'slide_from_right' }}>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="NoContactQuestion" component={NoContactScreen} />
           <Stack.Screen name="FeelingQuestion" component={FeelingScreen} />
