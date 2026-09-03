@@ -60,9 +60,8 @@ export function FeelingReasonScreen() {
     : Alert.alert('เลือกเหตุผลอีกนิดนะ', 'เลือกสิ่งที่ทำให้คุณรู้สึกแบบนี้มากที่สุด');
 
   return (
-    <Screen contentStyle={styles.screen} resetScrollOnFocus backgroundColor="#F9F1EE">
-      <Pressable onPress={() => navigation.goBack()} style={styles.back}><Text style={styles.backText}>‹  ย้อนกลับ</Text></Pressable>
-      <View style={styles.progress}><View style={styles.progressActive} /><View style={styles.progressActive} /><View style={styles.progressActive} /><View style={styles.progressIdle} /><View style={styles.progressIdle} /></View>
+    <Screen contentStyle={styles.screen} resetScrollOnFocus backgroundColor="#F9F1EE" stickyHeader>
+      <View style={styles.navigationHeader}><Pressable onPress={() => navigation.goBack()} style={styles.back}><Text style={styles.backText}>‹  ย้อนกลับ</Text></Pressable><View style={styles.progress}><View style={styles.progressActive} /><View style={styles.progressActive} /><View style={styles.progressActive} /><View style={styles.progressIdle} /><View style={styles.progressIdle} /></View></View>
       <Text style={styles.step}>คำถาม 3 จาก 5</Text>
       <Text style={styles.title}>อะไรทำให้คุณรู้สึกว่า “{route.params.feeling}” มากที่สุด?</Text>
       <Text style={styles.hint}>เลือกข้อที่ใกล้กับความรู้สึกของคุณที่สุด</Text>
@@ -79,5 +78,6 @@ export function FeelingReasonScreen() {
 }
 
 const styles = StyleSheet.create({
+  navigationHeader: { backgroundColor: '#F9F1EE', paddingBottom: 12 },
   screen: { paddingTop: 20, backgroundColor: '#F9F1EE' }, back: { alignSelf: 'flex-start', paddingVertical: 10, paddingRight: 20 }, backText: { color: colors.primary, fontSize: 15, fontWeight: '700' }, progress: { flexDirection: 'row', gap: 7, marginTop: 13 }, progressActive: { flex: 1, height: 5, borderRadius: 3, backgroundColor: colors.primary }, progressIdle: { flex: 1, height: 5, borderRadius: 3, backgroundColor: '#E8DADD' }, step: { color: colors.primary, fontSize: 12, fontWeight: '800', marginTop: 25 }, title: { color: colors.text, fontSize: 27, lineHeight: 37, fontWeight: '800', marginTop: 8 }, hint: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: 8 }, options: { gap: 10, marginTop: 25 }, option: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 16 }, selectedOption: { borderColor: '#C98193', backgroundColor: '#FFF2F5' }, label: { flex: 1, color: colors.text, fontSize: 15, fontWeight: '700' }, selectedText: { color: '#6A3F4B' }, radio: { width: 19, height: 19, borderRadius: 10, borderWidth: 2, borderColor: '#C9BCC0' }, selectedRadio: { borderWidth: 5, borderColor: colors.primary }, noteLabel: { color: colors.text, fontSize: 16, fontWeight: '800', marginTop: 25, marginBottom: 10 }, optional: { color: colors.muted, fontSize: 13, fontWeight: '500' }, input: { minHeight: 110, borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: '#FFF', color: colors.text, fontSize: 15, lineHeight: 22, padding: 15 }, button: { backgroundColor: colors.primary, borderRadius: 16, alignItems: 'center', paddingVertical: 16, marginTop: 25 }, buttonText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 });

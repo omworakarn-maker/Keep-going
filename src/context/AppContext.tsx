@@ -15,6 +15,10 @@ type AppContextValue = AppState & {
   finishOnboarding: (days: number, feeling: string, feelingReason: string, feelingNote: string, goal: string, answer: string) => void;
   updateStartDate: (date: string) => void;
   dismissDailyWelcome: () => void;
+  setAllowEarlyWeeklySummary: (value: boolean) => void;
+  addSelfReason: (reason: string) => void;
+  updateSelfReason: (index: number, reason: string) => void;
+  deleteSelfReason: (index: number) => void;
   resetApp: () => Promise<void>;
 };
 
@@ -31,6 +35,8 @@ const initialState: AppState = {
   feelingNote: '',
   healingAnswer: '',
   lastDailyWelcomeDate: '',
+  allowEarlyWeeklySummary: false,
+  selfReasons: [],
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -94,13 +100,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateStartDate = (startDate: string) => setState((current) => ({ ...current, startDate }));
   const dismissDailyWelcome = () => setState((current) => ({ ...current, lastDailyWelcomeDate: isoToday() }));
+  const setAllowEarlyWeeklySummary = (allowEarlyWeeklySummary: boolean) => setState((current) => ({ ...current, allowEarlyWeeklySummary }));
+  const addSelfReason = (reason: string) => {
+    const value = reason.trim();
+    if (!value) return;
+    setState((current) => ({ ...current, selfReasons: [...(current.selfReasons ?? []), value] }));
+  };
+  const updateSelfReason = (index: number, reason: string) => {
+    const value = reason.trim();
+    if (!value) return;
+    setState((current) => ({ ...current, selfReasons: (current.selfReasons ?? []).map((item, itemIndex) => itemIndex === index ? value : item) }));
+  };
+  const deleteSelfReason = (index: number) => setState((current) => ({ ...current, selfReasons: (current.selfReasons ?? []).filter((_, itemIndex) => itemIndex !== index) }));
 
   const resetApp = async () => {
     await clearState();
     setState(initialState);
   };
 
-  return <AppContext.Provider value={{ ...state, urgeEntries: state.urgeEntries ?? [], isLoaded, addEntry, addDiaryEntry, deleteDiaryEntry, addUrgeEntry, deleteUrgeEntry, finishOnboarding, updateStartDate, dismissDailyWelcome, resetApp }}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={{ ...state, urgeEntries: state.urgeEntries ?? [], selfReasons: state.selfReasons ?? [], allowEarlyWeeklySummary: state.allowEarlyWeeklySummary ?? false, isLoaded, addEntry, addDiaryEntry, deleteDiaryEntry, addUrgeEntry, deleteUrgeEntry, finishOnboarding, updateStartDate, dismissDailyWelcome, setAllowEarlyWeeklySummary, addSelfReason, updateSelfReason, deleteSelfReason, resetApp }}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {

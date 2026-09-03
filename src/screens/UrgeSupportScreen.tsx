@@ -1,7 +1,8 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Dimensions, Easing, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Animated, Dimensions, Easing, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
 import { colors } from '../constants/theme';
 import { useApp } from '../context/AppContext';
@@ -11,11 +12,12 @@ const TOTAL_SECONDS = 60;
 
 export function UrgeSupportScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { healingGoal, healingAnswer, addUrgeEntry } = useApp();
+  const { healingGoal, healingAnswer, selfReasons, addUrgeEntry } = useApp();
   const [step, setStep] = useState(0);
   const [seconds, setSeconds] = useState(TOTAL_SECONDS);
   const [message, setMessage] = useState('');
   const [audioUri, setAudioUri] = useState<string | null>(null);
+  const personalReason = useRef(selfReasons.length ? selfReasons[Math.floor(Math.random() * selfReasons.length)] : '').current;
   const breath = useRef(new Animated.Value(0)).current;
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder, 100);
@@ -114,7 +116,7 @@ export function UrgeSupportScreen() {
   const scale = breath.interpolate({ inputRange: [0, 1], outputRange: [0.82, 1.18] });
   const opacity = breath.interpolate({ inputRange: [0, 1], outputRange: [0.45, 0.9] });
 
-  return <SafeAreaView style={styles.safe}><KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+  return <SafeAreaView style={styles.safe}><TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}><KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <View style={styles.header}>
       <Pressable style={styles.headerSide} onPress={() => step === 0 ? navigation.goBack() : transitionTo(step - 1, -1)} hitSlop={12}><Text style={styles.back}>‹ ย้อนกลับ</Text></Pressable>
       <View style={styles.steps}>{[0, 1, 2].map((item) => <View key={item} style={[styles.stepDot, item <= step && styles.stepDotActive]} />)}</View>
@@ -145,10 +147,11 @@ export function UrgeSupportScreen() {
       <Text style={styles.finalEmoji}>🌱</Text><Text style={[styles.title, styles.center]}>วันนี้คุณเลือกดูแลหัวใจตัวเองแล้ว</Text>
       <Text style={[styles.body, styles.center]}>การคิดถึงเขาไม่ได้แปลว่าคุณต้องกลับไปหาเขา ความรู้สึกเกิดขึ้นได้ และมันจะค่อย ๆ ผ่านไป</Text>
       <View style={styles.reminder}><Text style={styles.reminderLabel}>สิ่งที่คุณกำลังทำเพื่อตัวเอง</Text><Text style={styles.reminderText}>{healingGoal || 'กลับมาดูแลหัวใจตัวเอง'}</Text>{healingAnswer ? <Text style={styles.answer}>“{healingAnswer}”</Text> : null}</View>
+      {personalReason ? <View style={styles.personalReason}><Text style={styles.personalReasonLabel}>เหตุผลที่คุณเคยฝากไว้กับตัวเอง</Text><Text style={styles.personalReasonText}>“{personalReason}”</Text></View> : null}
       <Pressable onPress={() => navigation.goBack()} style={styles.primary}><Text style={styles.primaryText}>กลับไปใช้วันนี้ของฉันต่อ</Text></Pressable>
     </View>}
     </Animated.View>
-  </KeyboardAvoidingView></SafeAreaView>;
+  </KeyboardAvoidingView></TouchableWithoutFeedback></SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
@@ -159,4 +162,5 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: colors.primary, minHeight: 54, borderRadius: 17, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, marginTop: 20 }, primaryText: { color: '#FFF', fontSize: 15, fontWeight: '800', textAlign: 'center' }, noteCard: { flex: 1, minHeight: 250, backgroundColor: '#FFFDF8', borderWidth: 1, borderColor: '#E9DED8', borderRadius: 20, padding: 18, marginTop: 24 }, input: { flex: 1, color: colors.text, fontSize: 16, lineHeight: 27, padding: 0 },
   voiceCard: { minHeight: 72, borderRadius: 18, backgroundColor: '#F5E8EC', marginTop: 12, padding: 14, paddingLeft: 17, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, voiceTitle: { color: colors.text, fontSize: 14, fontWeight: '800' }, voiceHint: { color: colors.muted, fontSize: 11, marginTop: 4 }, micButton: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }, stopButton: { backgroundColor: '#C76D78' }, micIcon: { color: '#FFF', fontSize: 18, fontWeight: '800' }, voiceActions: { flexDirection: 'row', alignItems: 'center', gap: 8 }, playButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }, playIcon: { color: '#FFF', fontSize: 15, fontWeight: '800' }, retryButton: { paddingHorizontal: 8, paddingVertical: 10 }, retryText: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   finalEmoji: { fontSize: 52, textAlign: 'center', marginTop: 15, marginBottom: 22 }, center: { textAlign: 'center' }, reminder: { backgroundColor: '#F5E8EC', borderRadius: 22, padding: 22, marginTop: 32 }, reminderLabel: { color: '#98717C', fontSize: 12, fontWeight: '800' }, reminderText: { color: colors.text, fontSize: 20, lineHeight: 28, fontWeight: '800', marginTop: 7 }, answer: { color: '#796C73', fontSize: 14, lineHeight: 22, marginTop: 12 },
+  personalReason: { backgroundColor: '#FFF4EE', borderRadius: 18, padding: 17, marginTop: 12 }, personalReasonLabel: { color: '#A27982', fontSize: 10, fontWeight: '800' }, personalReasonText: { color: colors.text, fontSize: 14, lineHeight: 22, fontWeight: '700', marginTop: 6 },
 });

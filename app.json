@@ -6,13 +6,30 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
-      "expo-audio"
+      "expo-audio",
+      "expo-asset",
+      "expo-router"
     ],
     "android": {
-      "package": "com.example.keepgoing"
+      "package": "com.example.keepgoing",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "ios": {
-      "bundleIdentifier": "com.example.keepgoing"
+      "bundleIdentifier": "com.example.keepgoing",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9c46d3de-7713-4baa-a519-3a050cbaa792"
+      }
     }
   }
 }

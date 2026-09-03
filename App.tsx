@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AppProvider, useApp } from './src/context/AppContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { DailyWelcome } from './src/components/DailyWelcome';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 function AppContent() {
   const { isLoaded } = useApp();
@@ -19,8 +20,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }

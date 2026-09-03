@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 import { RootStackParamList } from '../types';
@@ -51,20 +53,40 @@ export function HealingComfortScreen() {
   const slides = useMemo(() => [comfort.opening, comfort.message, comfort.reminder], [comfort]);
   const [slideIndex, setSlideIndex] = useState(0);
   const [visibleText, setVisibleText] = useState('');
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const typingRun = useRef(0);
   const currentText = slides[slideIndex];
   const isTyped = visibleText.length === currentText.length;
   const isLast = slideIndex === slides.length - 1;
 
   useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+  }, []);
+
+  useEffect(() => {
     setVisibleText('');
+    if (reduceMotion) {
+      setVisibleText(currentText);
+      return;
+    }
+    typingRun.current += 1;
+    const run = typingRun.current;
     let index = 0;
-    const typing = setInterval(() => {
+    let typing: ReturnType<typeof setTimeout>;
+    const typeNext = () => {
+      if (run !== typingRun.current) return;
       index += 1;
       setVisibleText(currentText.slice(0, index));
-      if (index >= currentText.length) clearInterval(typing);
-    }, 38);
-    return () => clearInterval(typing);
-  }, [currentText]);
+      const character = currentText[index - 1];
+      if (character && !/\s/.test(character)) Haptics.selectionAsync();
+      if (index < currentText.length) {
+        const pause = /[.…!?]/.test(character) ? 230 : character === '\n' ? 150 : 42;
+        typing = setTimeout(typeNext, pause);
+      }
+    };
+    typing = setTimeout(typeNext, 300);
+    return () => { typingRun.current += 1; clearTimeout(typing); };
+  }, [currentText, reduceMotion]);
 
   const advance = () => {
     if (!isTyped) return setVisibleText(currentText);

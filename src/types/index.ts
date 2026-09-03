@@ -42,6 +42,8 @@ export type AppState = {
   feelingNote: string;
   healingAnswer: string;
   lastDailyWelcomeDate: string;
+  allowEarlyWeeklySummary: boolean;
+  selfReasons: string[];
 };
 
 export type RootStackParamList = {
