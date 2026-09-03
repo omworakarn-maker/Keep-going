@@ -24,7 +24,7 @@ export function HistoryScreen() {
   const removeUnsent = (id: string) => Alert.alert('ลบข้อความที่ไม่ได้ส่ง?', 'ทั้งข้อความและเสียงจะถูกลบออกจากเครื่อง', [{ text: 'ยกเลิก', style: 'cancel' }, { text: 'ลบ', style: 'destructive', onPress: () => deleteUrgeEntry(id) }]);
 
   return <>
-    <Screen resetScrollOnFocus animateOnFocus={false}>
+    <Screen animateOnFocus={false}>
       <Text style={styles.title}>เรื่องราวของฉัน</Text><Text style={styles.subtitle}>ทุกวันที่ผ่านมา คือหลักฐานว่าคุณกำลังดูแลตัวเอง</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filters}>
         <FilterButton label="ทั้งหมด" active={filter === 'all'} onPress={() => setFilter('all')} /><FilterButton label="เช็กอิน" active={filter === 'checkin'} onPress={() => setFilter('checkin')} /><FilterButton label="ไดอารี" active={filter === 'diary'} onPress={() => setFilter('diary')} /><FilterButton label="ไม่ได้ส่ง" active={filter === 'unsent'} onPress={() => setFilter('unsent')} />

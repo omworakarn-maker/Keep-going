@@ -66,7 +66,7 @@ export function ProgressScreen() {
     message: `${officialSummaryReady ? 'บทสรุปของฉัน' : 'ภาพรวมใจของฉันในตอนนี้'} · ${weekRange}\n\n${profile.emoji} อารมณ์หลัก: ${dominantMood || 'กำลังเริ่มต้น'}\n\n${profile.title}\n\n${profile.description}\n\nสิ่งที่ใจอาจต้องการ\n${profile.care}\n\nเช็กอิน ${weekEntries.length} วัน · ไดอารี่ ${weekDiaryCount} ครั้ง · ผ่านช่วงอยากทักเขา ${weekUrgeCount} ครั้ง\n\n— Keep Going 🌱`,
   });
 
-  return <Screen resetScrollOnFocus animateOnFocus={false}>
+  return <Screen animateOnFocus={false}>
     <Text style={styles.eyebrow}>PROGRESS</Text><Text style={styles.title}>ทุกก้าวของคุณมีความหมาย</Text><Text style={styles.subtitle}>ไม่ต้องดีขึ้นทุกวัน แค่ยังเลือกดูแลตัวเองก็เพียงพอแล้ว</Text>
 
     <View style={styles.hero}>
