@@ -37,7 +37,7 @@ export function SettingsScreen() {
   const removeReason = (index: number) => Alert.alert('ลบเหตุผลนี้?', 'คุณเพิ่มเหตุผลใหม่กลับมาได้เสมอ', [{ text: 'ยกเลิก', style: 'cancel' }, { text: 'ลบ', style: 'destructive', onPress: () => { deleteSelfReason(index); if (editingReason === index) { setEditingReason(null); setReasonDraft(''); } } }]);
 
   return (
-    <Screen>
+    <Screen animateOnFocus={false}>
       <Text style={styles.title}>ตั้งค่า</Text>
       <Text style={styles.subtitle}>ปรับพื้นที่นี้ให้ตรงกับการเดินทางของคุณ</Text>
       <View style={styles.card}>

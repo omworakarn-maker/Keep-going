@@ -20,9 +20,16 @@ function NavigationGate() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', gestureEnabled: true }}>
-        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+      <Stack screenOptions={{ headerShown: false, animation: 'none', gestureEnabled: true }}>
+        <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
         <Stack.Screen name="UrgeSupport" options={{ presentation: 'modal', animation: 'slide_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="Welcome" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="NoContactQuestion" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="FeelingQuestion" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="FeelingReasonQuestion" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="HealingGoalQuestion" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="HealingFollowUp" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="HealingComfort" options={{ animation: 'slide_from_right' }} />
       </Stack>
       <DailyWelcome />
     </>
