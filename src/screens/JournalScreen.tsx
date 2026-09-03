@@ -18,7 +18,7 @@ const encouragements: Record<string, { emoji: string; title: string; message: st
 export function JournalScreen() {
   const { addEntry, addDiaryEntry, entries, diaryEntries } = useApp();
   const [mode, setMode] = useState<'checkin' | 'diary'>('checkin');
-  const [mood, setMood] = useState(moods[1]);
+  const [mood, setMood] = useState<Mood | null>(null);
   const [note, setNote] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -28,8 +28,9 @@ export function JournalScreen() {
   const encouragement = encouragementMood ? encouragements[encouragementMood] : null;
 
   const saveCheckin = () => {
+    if (!mood) return Alert.alert('เลือกความรู้สึกก่อนนะ', 'เลือกอารมณ์ที่ใกล้กับวันนี้ที่สุด');
     if (!note.trim()) return Alert.alert('เขียนอีกนิดไหม', 'ลองบอกตัวเองสั้น ๆ ว่าวันนี้เป็นอย่างไร');
-    addEntry(mood, note.trim()); setNote(''); setEncouragementMood(mood.label);
+    addEntry(mood, note.trim()); setMood(null); setNote(''); setEncouragementMood(mood.label);
   };
 
   const saveDiary = () => {
@@ -62,7 +63,7 @@ export function JournalScreen() {
 function Segment({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) { return <Pressable onPress={onPress} style={[styles.segmentButton, selected && styles.segmentSelected]}><Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{label}</Text></Pressable>; }
 function formatToday() { return new Date().toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
 function SaveButton({ label, onPress }: { label: string; onPress: () => void }) { return <Pressable onPress={onPress} style={styles.button}><Text style={styles.buttonText}>{label}</Text></Pressable>; }
-function MoodPicker({ value, onChange }: { value: Mood; onChange: (mood: Mood) => void }) { return <View style={styles.moods}>{moods.map((item) => <Pressable key={item.label} onPress={() => onChange(item)} style={[styles.mood, value.label === item.label && { backgroundColor: item.color }]}><Text style={styles.emoji}>{item.emoji}</Text><Text style={styles.label}>{item.label}</Text></Pressable>)}</View>; }
+function MoodPicker({ value, onChange }: { value: Mood | null; onChange: (mood: Mood) => void }) { return <View style={styles.moods}>{moods.map((item) => <Pressable key={item.label} onPress={() => onChange(item)} style={[styles.mood, value?.label === item.label && { backgroundColor: item.color }]}><Text style={styles.emoji}>{item.emoji}</Text><Text style={styles.label}>{item.label}</Text></Pressable>)}</View>; }
 function Completed({ entry }: { entry: { emoji: string; mood: string; date: string; note: string } }) { return <View><View style={styles.completed}><Text style={styles.completedEmoji}>💌</Text><Text style={styles.completedTitle}>วันนี้คุณได้ตอบไปแล้ว</Text><Text style={styles.completedText}>ถ้ายังมีอะไรอยู่ในใจ คุณเขียนต่อในไดอารีได้เสมอ</Text></View><Text style={styles.savedLabel}>บันทึกของวันนี้</Text><View style={styles.saved}><Text style={styles.savedEmoji}>{entry.emoji}</Text><View style={{ flex: 1 }}><Text style={styles.savedMeta}>{entry.mood} · {formatThaiDate(entry.date)}</Text><Text style={styles.savedNote}>{entry.note}</Text></View></View></View>; }
 
 const styles = StyleSheet.create({
