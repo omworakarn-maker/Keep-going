@@ -25,6 +25,8 @@ export type UrgeEntry = {
   id: string;
   createdAt: string;
   message: string;
+  kind?: 'message' | 'letter';
+  recipient?: string;
   audioUri?: string;
   audioDuration?: number;
 };
@@ -56,6 +58,7 @@ export type RootStackParamList = {
   HealingComfort: { days: number; feeling: string; feelingReason: string; feelingNote: string; goal: string; answer: string };
   Main: undefined;
   UrgeSupport: undefined;
+  ReleaseLetter: undefined;
 };
 
 export type MainTabParamList = {
