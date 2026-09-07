@@ -12,7 +12,8 @@ function NavigationGate() {
   useEffect(() => {
     if (!isLoaded) return;
     const inTabs = segments[0] === '(tabs)';
-    if (hasOnboarded && !inTabs && segments[0] !== 'UrgeSupport') router.replace('/(tabs)/Home');
+    const isHealingTool = segments[0] === 'UrgeSupport' || segments[0] === 'ReleaseLetter';
+    if (hasOnboarded && !inTabs && !isHealingTool) router.replace('/(tabs)/Home');
     if (!hasOnboarded && inTabs) router.replace('/Welcome');
   }, [hasOnboarded, isLoaded, segments]);
 
@@ -23,6 +24,7 @@ function NavigationGate() {
       <Stack screenOptions={{ headerShown: false, animation: 'none', gestureEnabled: true }}>
         <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
         <Stack.Screen name="UrgeSupport" options={{ presentation: 'modal', animation: 'slide_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="ReleaseLetter" options={{ presentation: 'modal', animation: 'slide_from_bottom', gestureEnabled: false }} />
         <Stack.Screen name="Welcome" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="NoContactQuestion" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="FeelingQuestion" options={{ animation: 'slide_from_right' }} />

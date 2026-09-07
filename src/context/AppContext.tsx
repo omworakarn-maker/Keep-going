@@ -10,7 +10,7 @@ type AppContextValue = AppState & {
   addEntry: (mood: Mood, note: string) => void;
   addDiaryEntry: (title: string, content: string, mood?: Mood) => void;
   deleteDiaryEntry: (id: string) => void;
-  addUrgeEntry: (message: string, audioUri?: string | null, audioDuration?: number) => Promise<void>;
+  addUrgeEntry: (message: string, audioUri?: string | null, audioDuration?: number, kind?: 'message' | 'letter', recipient?: string) => Promise<void>;
   deleteUrgeEntry: (id: string) => Promise<void>;
   finishOnboarding: (days: number, feeling: string, feelingReason: string, feelingNote: string, goal: string, answer: string) => void;
   updateStartDate: (date: string) => void;
@@ -75,7 +75,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const deleteDiaryEntry = (id: string) =>
     setState((current) => ({ ...current, diaryEntries: current.diaryEntries.filter((entry) => entry.id !== id) }));
 
-  const addUrgeEntry = async (message: string, audioUri?: string | null, audioDuration?: number) => {
+  const addUrgeEntry = async (message: string, audioUri?: string | null, audioDuration?: number, kind: 'message' | 'letter' = 'message', recipient?: string) => {
     if (!message.trim() && !audioUri) return;
     const id = String(Date.now());
     let savedAudioUri: string | undefined;
@@ -85,7 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       savedAudioUri = `${directory}${id}.m4a`;
       await FileSystem.copyAsync({ from: audioUri, to: savedAudioUri });
     }
-    const entry: UrgeEntry = { id, createdAt: new Date().toISOString(), message: message.trim(), audioUri: savedAudioUri, audioDuration };
+    const entry: UrgeEntry = { id, createdAt: new Date().toISOString(), message: message.trim(), kind, recipient: recipient?.trim() || undefined, audioUri: savedAudioUri, audioDuration };
     setState((current) => ({ ...current, urgeEntries: [entry, ...(current.urgeEntries ?? [])] }));
   };
 
