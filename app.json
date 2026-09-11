@@ -9,13 +9,7 @@
       "expo-audio",
       "expo-asset",
       "expo-router",
-      "expo-secure-store",
-      [
-        "expo-local-authentication",
-        {
-          "faceIDPermission": "อนุญาตให้ Keep Going ใช้ Face ID เพื่อปกป้องบันทึกส่วนตัวของคุณ"
-        }
-      ]
+      "expo-secure-store"
     ],
     "android": {
       "package": "com.example.keepgoing",
