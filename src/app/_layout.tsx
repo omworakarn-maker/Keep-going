@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DailyWelcome } from '../components/DailyWelcome';
 import { AppProvider, useApp } from '../context/AppContext';
+import { AppPrivacyGuard } from '../components/AppPrivacyGuard';
 
 function NavigationGate() {
   const { hasOnboarded, isLoaded } = useApp();
@@ -39,5 +40,5 @@ function NavigationGate() {
 }
 
 export default function RootLayout() {
-  return <SafeAreaProvider><AppProvider><NavigationGate /></AppProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><AppProvider><AppPrivacyGuard><NavigationGate /></AppPrivacyGuard></AppProvider></SafeAreaProvider>;
 }

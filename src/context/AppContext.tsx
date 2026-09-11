@@ -4,6 +4,7 @@ import { healingGoals, moods } from '../constants/theme';
 import { clearState, loadState, saveState } from '../services/storage';
 import { AppState, DiaryEntry, Entry, Mood, UrgeEntry } from '../types';
 import { dateFromDaysAgo, isoToday } from '../utils/date';
+import { disableAppLock } from '../services/privacy';
 
 type AppContextValue = AppState & {
   isLoaded: boolean;
@@ -115,6 +116,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetApp = async () => {
     await clearState();
+    await disableAppLock();
     setState(initialState);
   };
 
