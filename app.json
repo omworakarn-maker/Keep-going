@@ -2,6 +2,7 @@
   "expo": {
     "name": "Keep Going",
     "slug": "keep-going",
+    "scheme": "keepgoing",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -9,6 +10,7 @@
       "expo-audio",
       "expo-asset",
       "expo-router",
+      "expo-notifications",
       "expo-secure-store"
     ],
     "android": {
