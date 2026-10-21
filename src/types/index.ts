@@ -46,6 +46,8 @@ export type AppState = {
   lastDailyWelcomeDate: string;
   allowEarlyWeeklySummary: boolean;
   selfReasons: string[];
+  notificationsEnabled: boolean;
+  notificationTime: string;
 };
 
 export type RootStackParamList = {

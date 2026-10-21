@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Modal, Pressable, SafeAreaView, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Screen } from '../components/Screen';
 import { colors, moods } from '../constants/theme';
 import { useApp } from '../context/AppContext';

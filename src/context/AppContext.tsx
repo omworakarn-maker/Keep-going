@@ -1,9 +1,13 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
 import * as FileSystem from 'expo-file-system/legacy';
 import { healingGoals, moods } from '../constants/theme';
 import { clearState, loadState, saveState } from '../services/storage';
+import { upsertDailyCheckin } from '../services/dailyCheckins';
+import { clearCloudData, deleteCloudDiaryEntry, deleteCloudUrgeEntry, loadCloudState, migrateStateToCloud, saveCloudSettings, upsertDiaryEntry, upsertUrgeEntry } from '../services/cloudData';
 import { AppState, DiaryEntry, Entry, Mood, UrgeEntry } from '../types';
 import { dateFromDaysAgo, isoToday } from '../utils/date';
+import { disableGentleNotifications, parseReminderTime, scheduleGentleNotifications } from '../services/notifications';
 
 type AppContextValue = AppState & {
   isLoaded: boolean;
@@ -19,6 +23,7 @@ type AppContextValue = AppState & {
   addSelfReason: (reason: string) => void;
   updateSelfReason: (index: number, reason: string) => void;
   deleteSelfReason: (index: number) => void;
+  setNotificationSettings: (enabled: boolean, time: string) => void;
   resetApp: () => Promise<void>;
 };
 
@@ -37,27 +42,81 @@ const initialState: AppState = {
   lastDailyWelcomeDate: '',
   allowEarlyWeeklySummary: false,
   selfReasons: [],
+  notificationsEnabled: false,
+  notificationTime: '20:00',
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [state, setState] = useState(initialState);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    loadState()
-      .then((saved) => saved && setState((current) => ({ ...current, ...saved })))
-      .finally(() => setIsLoaded(true));
-  }, []);
+    let active = true;
+    (async () => {
+      const saved = await loadState(user?.id);
+      let nextState: Partial<AppState> = saved ?? {};
+
+      if (user) {
+        try {
+          const cloud = await loadCloudState();
+          if (cloud) {
+            const localEntries = nextState.entries ?? [];
+            const localDiaries = nextState.diaryEntries ?? [];
+            const localUrges = nextState.urgeEntries ?? [];
+            nextState = {
+              ...nextState,
+              ...cloud,
+              entries: mergeBy(cloud.entries ?? [], localEntries, (item) => item.date),
+              diaryEntries: mergeBy(cloud.diaryEntries ?? [], localDiaries, (item) => item.id),
+              urgeEntries: mergeBy(cloud.urgeEntries ?? [], localUrges, (item) => item.id),
+            };
+            await migrateStateToCloud({ ...initialState, ...nextState });
+          } else if (saved) {
+            const localState = { ...initialState, ...saved };
+            await migrateStateToCloud(localState);
+            nextState = { ...nextState, ...(await loadCloudState() ?? {}) };
+          }
+        } catch {
+          // Keep the local copy available when the device is offline.
+        }
+      }
+
+      if (active) {
+        setState((current) => ({ ...current, ...nextState }));
+        setIsLoaded(true);
+      }
+    })();
+    return () => { active = false; };
+  }, [user]);
 
   useEffect(() => {
-    if (isLoaded) saveState(state);
+    if (isLoaded && user) saveState(state, user.id);
   }, [state, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded && user) void saveCloudSettings(state).catch(() => undefined);
+  }, [state, isLoaded, user]);
+
+  useEffect(() => {
+    if (!isLoaded || !state.notificationsEnabled) return;
+    const time = parseReminderTime(state.notificationTime ?? '20:00');
+    if (time) scheduleGentleNotifications(time.hour, time.minute, false).catch(() => undefined);
+  }, [isLoaded]);
 
   const addEntry = (mood: Mood, note: string) => {
     const entry: Entry = { id: String(Date.now()), date: isoToday(), mood: mood.label, emoji: mood.emoji, note };
     setState((current) => ({ ...current, entries: [entry, ...current.entries.filter((item) => item.date !== entry.date)] }));
+    if (user) {
+      void upsertDailyCheckin(entry).then((savedEntry) => {
+        setState((current) => ({
+          ...current,
+          entries: current.entries.map((item) => item.date === savedEntry.date ? savedEntry : item),
+        }));
+      }).catch(() => undefined);
+    }
   };
 
   const addDiaryEntry = (title: string, content: string, mood?: Mood) => {
@@ -70,10 +129,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       emoji: mood?.emoji,
     };
     setState((current) => ({ ...current, diaryEntries: [diaryEntry, ...current.diaryEntries] }));
+    if (user) void upsertDiaryEntry(diaryEntry).catch(() => undefined);
   };
 
-  const deleteDiaryEntry = (id: string) =>
+  const deleteDiaryEntry = (id: string) => {
     setState((current) => ({ ...current, diaryEntries: current.diaryEntries.filter((entry) => entry.id !== id) }));
+    if (user) void deleteCloudDiaryEntry(id).catch(() => undefined);
+  };
 
   const addUrgeEntry = async (message: string, audioUri?: string | null, audioDuration?: number, kind: 'message' | 'letter' = 'message', recipient?: string) => {
     if (!message.trim() && !audioUri) return;
@@ -87,12 +149,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     const entry: UrgeEntry = { id, createdAt: new Date().toISOString(), message: message.trim(), kind, recipient: recipient?.trim() || undefined, audioUri: savedAudioUri, audioDuration };
     setState((current) => ({ ...current, urgeEntries: [entry, ...(current.urgeEntries ?? [])] }));
+    if (user) await upsertUrgeEntry(entry);
   };
 
   const deleteUrgeEntry = async (id: string) => {
     const target = state.urgeEntries?.find((entry) => entry.id === id);
-    if (target?.audioUri) await FileSystem.deleteAsync(target.audioUri, { idempotent: true });
+    if (target?.audioUri?.startsWith('file:')) await FileSystem.deleteAsync(target.audioUri, { idempotent: true });
     setState((current) => ({ ...current, urgeEntries: (current.urgeEntries ?? []).filter((entry) => entry.id !== id) }));
+    if (user) await deleteCloudUrgeEntry(id);
   };
 
   const finishOnboarding = (days: number, currentFeeling: string, feelingReason: string, feelingNote: string, goal: string, healingAnswer: string) =>
@@ -112,17 +176,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState((current) => ({ ...current, selfReasons: (current.selfReasons ?? []).map((item, itemIndex) => itemIndex === index ? value : item) }));
   };
   const deleteSelfReason = (index: number) => setState((current) => ({ ...current, selfReasons: (current.selfReasons ?? []).filter((_, itemIndex) => itemIndex !== index) }));
+  const setNotificationSettings = (notificationsEnabled: boolean, notificationTime: string) =>
+    setState((current) => ({ ...current, notificationsEnabled, notificationTime }));
 
   const resetApp = async () => {
-    await clearState();
+    if (user) await clearCloudData();
+    await clearState(user?.id);
+    await disableGentleNotifications();
     setState(initialState);
   };
 
-  return <AppContext.Provider value={{ ...state, urgeEntries: state.urgeEntries ?? [], selfReasons: state.selfReasons ?? [], allowEarlyWeeklySummary: state.allowEarlyWeeklySummary ?? false, isLoaded, addEntry, addDiaryEntry, deleteDiaryEntry, addUrgeEntry, deleteUrgeEntry, finishOnboarding, updateStartDate, dismissDailyWelcome, setAllowEarlyWeeklySummary, addSelfReason, updateSelfReason, deleteSelfReason, resetApp }}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={{ ...state, urgeEntries: state.urgeEntries ?? [], selfReasons: state.selfReasons ?? [], allowEarlyWeeklySummary: state.allowEarlyWeeklySummary ?? false, notificationsEnabled: state.notificationsEnabled ?? false, notificationTime: state.notificationTime ?? '20:00', isLoaded, addEntry, addDiaryEntry, deleteDiaryEntry, addUrgeEntry, deleteUrgeEntry, finishOnboarding, updateStartDate, dismissDailyWelcome, setAllowEarlyWeeklySummary, addSelfReason, updateSelfReason, deleteSelfReason, setNotificationSettings, resetApp }}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {
   const value = useContext(AppContext);
   if (!value) throw new Error('useApp must be used inside AppProvider');
   return value;
+}
+
+function mergeBy<T>(preferred: T[], fallback: T[], key: (item: T) => string) {
+  const seen = new Set(preferred.map(key));
+  return [...preferred, ...fallback.filter((item) => !seen.has(key(item)))];
 }
